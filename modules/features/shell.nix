@@ -20,6 +20,10 @@
         // {
           hms = "nh home switch ${config.programs.nh.flake}";
         };
+      aliases = rebuildAliases // {
+        # cd to the root of the current git repository
+        cdr = ''cd "$(git rev-parse --show-toplevel)"'';
+      };
     in
     {
       programs.zsh = {
@@ -28,13 +32,13 @@
         autosuggestion.enable = true;
         syntaxHighlighting.enable = true;
         history.size = 10000;
-        shellAliases = rebuildAliases // {
+        shellAliases = aliases // {
           ls = "${pkgs.eza}/bin/eza";
         };
       };
       programs.bash = {
         enable = true;
-        shellAliases = rebuildAliases;
+        shellAliases = aliases;
         # Without NixOS the login shell stays the distribution's bash (no
         # chsh, no /etc/shells entry); its first interactive shell hands over
         # to this zsh, as $SHELL too (what tmux, :terminal etc. start). Not for
