@@ -63,7 +63,7 @@
         enable = true;
         # `new` marks mail for the new-mail tag rules (newMailBatch); the
         # post-new hook removes it once they (and notify.nix) have run.
-        new.tags = [
+        settings.new.tags = [
           "new"
           "unread"
           "inbox"
