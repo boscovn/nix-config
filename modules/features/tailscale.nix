@@ -1,6 +1,7 @@
 # Tailscale: the daemon runs on NixOS (which also puts the `tailscale` CLI on
-# PATH); home-manager adds Trayscale, a tray GUI over that CLI. A host imports
-# both nixos.tailscale and homeManager.tailscale.
+# PATH); home-manager adds Trayscale, a tray GUI over that CLI, on gui hosts
+# only (dotfiles.gui). A host imports both nixos.tailscale and
+# homeManager.tailscale.
 { config, ... }:
 {
   nixos.tailscale = {
@@ -14,7 +15,9 @@
     };
   };
 
-  homeManager.tailscale = {
-    services.trayscale.enable = true;
-  };
+  homeManager.tailscale =
+    { config, ... }:
+    {
+      services.trayscale.enable = config.dotfiles.gui;
+    };
 }
