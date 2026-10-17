@@ -1,5 +1,5 @@
 # `nix run .#new-host -- <name>` creates modules/hosts/<name> from
-# templates/<kind> (nixos, wsl, home): fills in the system and stateVersion,
+# templates/<kind> (nixos, wsl, home, droid): fills in the system and stateVersion,
 # fetches the nixos-facter report and picks the disk (nixos), writes
 # features.nix from menus, then `git add`s and evaluates the new host.
 # The templates are also flake templates (`nix flake init -t .#<kind>`), with
@@ -37,6 +37,7 @@ in
     nixos = template "nixos" "NixOS host with nixos-facter and disko";
     wsl = template "wsl" "NixOS-WSL host";
     home = template "home" "Home-manager-only host on a non-NixOS distribution";
+    droid = template "droid" "Nix-on-Droid host (Android)";
   };
 
   perSystem =
@@ -61,12 +62,14 @@ in
           user=${user}
           nixos_features=(${lib.escapeShellArgs (features "nixos")})
           home_features=(${lib.escapeShellArgs (features "homeManager")})
+          droid_features=(${lib.escapeShellArgs (features "nixOnDroid")})
 
           die() { echo "new-host: $*" >&2; exit 1; }
           usage() {
             cat <<EOF
-          usage: new-host <name> [--kind nixos|wsl|home] [--report FILE] [--disk DEVICE]
+          usage: new-host <name> [--kind nixos|wsl|home|droid] [--report FILE] [--disk DEVICE]
                                  [--nixos-features a,b] [--home-features a,b]
+          (--nixos-features are the nixOnDroid features for --kind droid)
           Prompts for whatever isn't given. Run inside the dotfiles repository.
           EOF
             exit "''${1:-1}"
@@ -98,9 +101,15 @@ in
           [[ -e /etc/NIXOS ]] && guess=nixos
           grep -qi microsoft /proc/version 2>/dev/null && guess=wsl
           if [[ -z $kind ]]; then
-            kind=$(gum choose --header "Kind of host" --selected "$guess" nixos wsl home)
+            kind=$(gum choose --header "Kind of host" --selected "$guess" nixos wsl home droid)
           fi
-          [[ $kind =~ ^(nixos|wsl|home)$ ]] || die "unknown kind '$kind'"
+          [[ $kind =~ ^(nixos|wsl|home|droid)$ ]] || die "unknown kind '$kind'"
+          # The system-level slot the host's features.nix imports from.
+          sys_class=nixos
+          if [[ $kind == droid ]]; then
+            sys_class=nixOnDroid
+            nixos_features=("''${droid_features[@]}")
+          fi
 
           # Build the host in a scratch directory and move it in at the end, so
           # a failure or ^C leaves nothing behind.
@@ -165,7 +174,7 @@ in
           if [[ $kind != home && -z $nixos_sel ]]; then
             list=("''${nixos_features[@]}")
             preselect=$(available base "''${suggested[@]}")
-            nixos_sel=$(gum choose --no-limit --header "NixOS features (hardware suggestions preselected)" \
+            nixos_sel=$(gum choose --no-limit --header "$sys_class features (hardware suggestions preselected)" \
               --selected "''${preselect%,}" "''${nixos_features[@]}" | paste -sd,)
           fi
           if [[ -z $home_sel ]]; then
@@ -183,7 +192,7 @@ in
             echo 'in'
             echo '{'
             if [[ $kind != home ]]; then
-              echo '  nixos.''${name}.imports = with slots.nixos; ['
+              echo "  $sys_class.\''${name}.imports = with slots.$sys_class; ["
               nix_list "$nixos_sel"
               echo '  ];'
               echo
@@ -218,6 +227,10 @@ in
           echo "Evaluating…"
           if [[ $kind == home ]]; then
             attr="homeConfigurations.\"$user@$name\".activationPackage.drvPath"
+          elif [[ $kind == droid ]]; then
+            # Its home-manager part: the whole generation needs --impure and
+            # nix-on-droid's proot (builtins.storePath), present only on a device.
+            attr="nixOnDroidConfigurations.$name.config.home-manager.config.home.activationPackage.drvPath"
           else
             attr="nixosConfigurations.$name.config.system.build.toplevel.drvPath"
           fi
@@ -231,6 +244,7 @@ in
             nixos) echo "Install: disko-install or nixos-anywhere with --flake $root#$name (formats $disk)." ;;
             wsl) echo "Build the WSL tarball from it: see NixOS-WSL's docs (nixos-wsl.nixosModules.default)." ;;
             home) echo "On that machine: home-manager switch --flake <repo>#$user@$name, then 'hms'." ;;
+            droid) echo "In the Nix-on-Droid app: clone the repo to ~/.dotfiles, nix-on-droid switch --flake ~/.dotfiles#$name, then 'reb'." ;;
           esac
         '';
       };

@@ -12,14 +12,20 @@
       # than left to NH_FLAKE: home-manager's session variables load once per
       # login, so a newly added one is missing from terminals until re-login.
       # `reb` only on NixOS hosts; standalone home-manager (`hms`) works
-      # everywhere.
+      # everywhere but Nix-on-Droid, whose home-manager is embedded and which
+      # nh doesn't know: there `reb` is nix-on-droid's own switch.
       rebuildAliases =
-        lib.optionalAttrs config.dotfiles.nixos {
-          reb = "nh os switch ${config.programs.nh.flake}";
-        }
-        // {
-          hms = "nh home switch ${config.programs.nh.flake}";
-        };
+        if config.dotfiles.nixOnDroid then
+          {
+            reb = "nix-on-droid switch --flake ${config.programs.nh.flake}#${config.dotfiles.hostname}";
+          }
+        else
+          lib.optionalAttrs config.dotfiles.nixos {
+            reb = "nh os switch ${config.programs.nh.flake}";
+          }
+          // {
+            hms = "nh home switch ${config.programs.nh.flake}";
+          };
       aliases = rebuildAliases // {
         # cd to the root of the current git repository
         cdr = ''cd "$(git rev-parse --show-toplevel)"'';

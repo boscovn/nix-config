@@ -23,4 +23,11 @@
       };
       console.keyMap = lib.mkDefault "es";
     };
+
+  # Android keeps its own locale and keyboard; only the clock for Nix programs.
+  nixOnDroid.base =
+    { lib, ... }:
+    {
+      time.timeZone = lib.mkDefault "Europe/Madrid";
+    };
 }

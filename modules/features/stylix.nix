@@ -24,6 +24,18 @@ in
     theme
   ];
 
+  # Nix-on-Droid: the terminal's colours and font, and (like NixOS) injected
+  # into its embedded home-manager.
+  nixOnDroid.base = {
+    imports = [
+      inputs.stylix.nixOnDroidModules.stylix
+      theme
+    ];
+    # Its overlays go through nixpkgs.overlays, which Nix-on-Droid refuses in
+    # a flake (pkgs comes from hosts.nix); they only theme GUI packages anyway.
+    stylix.overlays.enable = false;
+  };
+
   # Standalone home-manager (`hms`) has no NixOS side to do that injection.
   standaloneHomeModules = [
     inputs.stylix.homeModules.stylix

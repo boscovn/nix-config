@@ -11,11 +11,13 @@
 
       config.home = {
         username = config.dotfiles.user;
-        homeDirectory =
+        # Nix-on-Droid sets its own (fixed) home directory.
+        homeDirectory = lib.mkDefault (
           if pkgs.stdenv.hostPlatform.isDarwin then
             "/Users/${config.dotfiles.user}"
           else
-            "/home/${config.dotfiles.user}";
+            "/home/${config.dotfiles.user}"
+        );
       };
     };
 }

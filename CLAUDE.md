@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-NixOS + Home Manager dotfiles, currently one host (a ThinkPad, x86_64-linux), organized with the **dendritic pattern**: every `.nix` file under `modules/` is a [flake-parts](https://flake.parts) module implementing one feature across every configuration class it touches (NixOS and/or home-manager). Hosts are compositions: importing a feature enables it.
+NixOS + Home Manager dotfiles for a ThinkPad (NixOS, x86_64-linux), a Rock 5T (home-manager only, aarch64-linux) and a Pixel 10 (Nix-on-Droid, `pixel-10`), organized with the **dendritic pattern**: every `.nix` file under `modules/` is a [flake-parts](https://flake.parts) module implementing one feature across every configuration class it touches (NixOS, Nix-on-Droid and/or home-manager). Hosts are compositions: importing a feature enables it.
 
 ## Key Commands
 
@@ -19,6 +19,10 @@ nh home switch ~/.dotfiles
 # Equivalents without nh
 sudo nixos-rebuild switch --flake ~/.dotfiles#thinkpad
 home-manager switch --flake ~/.dotfiles#bosco@thinkpad
+
+# On the phone (Nix-on-Droid, home-manager embedded; nh doesn't support it);
+# aliased as `reb` there. Its generation needs --impure, which it passes itself
+nix-on-droid switch --flake ~/.dotfiles#pixel-10
 
 # Neovim is its own flake (~/nvim, github:boscovn/nvim). `nvim` is a launcher
 # (modules/features/neovim.nix) that rebuilds it only when ~/nvim changed;
@@ -52,8 +56,8 @@ outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } {
 
 ### Plumbing (`modules/flake/`)
 
-- **`slots.nix`**: declares `nixos.<name>` and `homeManager.<name>` (typed `deferredModule`). Features add to them; hosts import them. Each value is wrapped with a `key` (importing it twice is a no-op) and a `_class`, so importing a home-manager slot into NixOS (or vice versa) is an evaluation error.
-- **`hosts.nix`**: each `hosts.<name>` becomes `nixosConfigurations.<name>` (home-manager embedded; skipped when `hosts.<name>.nixos = false`) and `homeConfigurations."<user>@<name>"` (standalone). Both use the **same** `homeManager.<name>` module and the same nixpkgs config (`allowUnfree` plus `hosts.<name>.nixpkgsConfig`), so `reb` and `hms` cannot drift. It also sets `networking.hostName` and, for home-manager, the read-only `dotfiles.hostname` / `dotfiles.nixos`. `standaloneHomeModules` holds modules only the standalone build needs (stylix's home-manager module, which NixOS otherwise injects itself).
+- **`slots.nix`**: declares `nixos.<name>`, `nixOnDroid.<name>` and `homeManager.<name>` (typed `deferredModule`). Features add to them; hosts import them. Each value is wrapped with a `key` (importing it twice is a no-op) and a `_class`, so importing a home-manager slot into NixOS (or vice versa) is an evaluation error.
+- **`hosts.nix`**: each `hosts.<name>` becomes `nixosConfigurations.<name>` (home-manager embedded; skipped when `hosts.<name>.nixos = false`) and `homeConfigurations."<user>@<name>"` (standalone). Both use the **same** `homeManager.<name>` module and the same nixpkgs config (`allowUnfree` plus `hosts.<name>.nixpkgsConfig`), so `reb` and `hms` cannot drift. It also sets `networking.hostName` and, for home-manager, the read-only `dotfiles.hostname` / `dotfiles.nixos`. A host with `nixOnDroid = true` (and `nixos = false`) becomes `nixOnDroidConfigurations.<name>` only (embedded home-manager with `osConfig`, user name `hosts.<name>.user`, fixed home `/data/data/com.termux.nix/files/home`; no `homeConfigurations`); home-manager sees it as `dotfiles.nixOnDroid` (no systemd: gpg-agent is off, `reb` is `nix-on-droid switch`). Off-device only its home-manager part evaluates purely (`.#nixOnDroidConfigurations.pixel-10.config.home-manager.config.home.activationPackage`): the whole generation needs `--impure` and nix-on-droid's proot in the local store (`builtins.storePath`; `nix-store -r <path> --option extra-substituters https://nix-on-droid.cachix.org --option extra-trusted-public-keys nix-on-droid.cachix.org-1:56snoMJTXmDRC1Ei24CmKoUqvHJ9XCp+nidK7qkMQrU=`). `standaloneHomeModules` holds modules only the standalone build needs (stylix's home-manager module, which NixOS otherwise injects itself).
 - **`systems.nix`**, **`formatter.nix`**: flake systems and the treefmt formatter/check.
 
 There are **no `specialArgs`**. Values shared across files come from the top-level flake-parts config, reached by closure: `config.my.{user,fullName,email}` (`modules/meta.nix`) and flake `inputs`. Inside a lower-level module, `config` is the NixOS/home-manager config, so bind top-level values before it (e.g. `{ config, ... }: let inherit (config.my) user; in { homeManager.base = { config, ... }: ...; }`).
@@ -62,7 +66,7 @@ There are **no `specialArgs`**. Values shared across files come from the top-lev
 
 A feature file writes to one or more slots. Small, related pieces merge under a shared **bundle** name instead of each getting its own name:
 
-- **`base`** (every host): `nixos.base` (boot, nix settings/caches, locale, user, network, stylix) and `homeManager.base` (shell, git/gh, gpg, CLI tools, the `nvim` launcher, stylix's terminal targets).
+- **`base`** (every host): `nixos.base` (boot, nix settings/caches, locale, user, network, stylix), `nixOnDroid.base` (nix caches, timezone, zsh login shell, stylix for the terminal; stylix's overlays off, Nix-on-Droid refuses `nixpkgs.*` in a flake) and `homeManager.base` (shell, git/gh, gpg, CLI tools, the `nvim` launcher, stylix's terminal targets).
 - **`gui`** (Linux desktop session): `nixos.gui` (greetd autologin, Hyprland, plymouth, keyring PAM, audio, fonts) and `homeManager.gui` (Hyprland lua config, hyprlock, hypridle, ashell, ghostty, apps, browsers, mpv, imv).
 
 Distinct, optional features have their own names: `nixos.{nvidia,nvidia-prime,cuda,intel-graphics,laptop,bluetooth,docker,gaming,kdeconnect,ssh,nixbuild,tailscale,secrets,howdy}`, `homeManager.{email,kdeconnect,laptop,tailscale,secrets}`. The thinkpad imports all of them except `howdy` (paused).
@@ -98,7 +102,8 @@ The thinkpad decodes video on the Intel iGPU (`vaapi`): its MX150 exposes no usa
 - **A host**: `nix run .#new-host -- <name>` (`modules/flake/new-host.nix`) creates `modules/hosts/<name>` from `templates/<kind>`:
   - `nixos`: facter report (this machine or over ssh), disko layout on a chosen disk (1G ESP + LUKS ext4), features preselected from the hardware;
   - `wsl`: NixOS-WSL (`inputs.nixos-wsl`), with `base`'s bootloader, fwupd and NetworkManager forced off;
-  - `home`: home-manager only on another distribution (`nixos = false`, `targets.genericLinux`).
+  - `home`: home-manager only on another distribution (`nixos = false`, `targets.genericLinux`);
+  - `droid`: Nix-on-Droid (`nixOnDroid = true`, aarch64-linux, its own `system.stateVersion` "24.05"); `--nixos-features` then picks `nixOnDroid` features.
 
   It fills in `system` and `stateVersion` (the locked nixpkgs release, written once), writes `features.nix` (with `dotfiles.terminal` when `gui` is picked), `git add`s and evaluates the host. Flags (`--kind`, `--report`, `--disk`, `--nixos-features`, `--home-features`) skip the menus. Hosts are named after their directory (`baseNameOf ./.`). The templates are also `nix flake init -t .#<kind>` templates with `@placeholders@` to fill by hand. darwin isn't supported yet (needs a `darwin` slot class and `darwinConfigurations`).
 - **Checking a throwaway host**: `nix run .#new-host -- tmp --kind home --home-features base` (or `--kind wsl`/`nixos`), then `git rm -r --cached modules/hosts/tmp && rm -r modules/hosts/tmp`.

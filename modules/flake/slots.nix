@@ -1,5 +1,5 @@
-# Named lower-level modules. A feature file adds to `nixos.<name>` and/or
-# `homeManager.<name>`; a host imports the names it wants. Each value is
+# Named lower-level modules. A feature file adds to `nixos.<name>`,
+# `nixOnDroid.<name>` and/or `homeManager.<name>`; a host imports the names it wants. Each value is
 # wrapped with a `key` (importing it twice is a no-op) and a `_class` (importing
 # it into the wrong kind of configuration is an evaluation error).
 { lib, ... }:
@@ -21,5 +21,6 @@ let
 in
 {
   options.nixos = slot "nixos";
+  options.nixOnDroid = slot "nixOnDroid";
   options.homeManager = slot "homeManager";
 }

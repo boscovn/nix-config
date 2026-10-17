@@ -16,4 +16,11 @@
         shell = pkgs.zsh;
       };
     };
+
+  # Nix-on-Droid has one user, named after the host's (hosts.nix).
+  nixOnDroid.base =
+    { pkgs, ... }:
+    {
+      user.shell = "${pkgs.zsh}/bin/zsh";
+    };
 }
