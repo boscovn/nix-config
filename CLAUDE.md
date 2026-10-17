@@ -11,18 +11,18 @@ NixOS + Home Manager dotfiles for a ThinkPad (NixOS, x86_64-linux), a Rock 5T (h
 ```bash
 # Rebuild and switch the system (+ embedded home-manager) through nh: build,
 # diff, then switch (asks for sudo itself); aliased as `reb`
-nh os switch ~/.dotfiles
+nh os switch ~/nix-config
 
 # Home-manager only, standalone (picks bosco@<hostname>); aliased as `hms`
-nh home switch ~/.dotfiles
+nh home switch ~/nix-config
 
 # Equivalents without nh
-sudo nixos-rebuild switch --flake ~/.dotfiles#thinkpad
-home-manager switch --flake ~/.dotfiles#bosco@thinkpad
+sudo nixos-rebuild switch --flake ~/nix-config#thinkpad
+home-manager switch --flake ~/nix-config#bosco@thinkpad
 
 # On the phone (Nix-on-Droid, home-manager embedded; nh doesn't support it);
 # aliased as `reb` there. Its generation needs --impure, which it passes itself
-nix-on-droid switch --flake ~/.dotfiles#pixel-10
+nix-on-droid switch --flake ~/nix-config#pixel-10
 
 # Neovim is its own flake (~/nvim, github:boscovn/nvim). `nvim` is a launcher
 # (modules/features/neovim.nix) that rebuilds it only when ~/nvim changed;

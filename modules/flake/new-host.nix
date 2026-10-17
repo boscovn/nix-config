@@ -244,7 +244,7 @@ in
             nixos) echo "Install: disko-install or nixos-anywhere with --flake $root#$name (formats $disk)." ;;
             wsl) echo "Build the WSL tarball from it: see NixOS-WSL's docs (nixos-wsl.nixosModules.default)." ;;
             home) echo "On that machine: home-manager switch --flake <repo>#$user@$name, then 'hms'." ;;
-            droid) echo "In the Nix-on-Droid app: clone the repo to ~/.dotfiles, nix-on-droid switch --flake ~/.dotfiles#$name, then 'reb'." ;;
+            droid) echo "In the Nix-on-Droid app: clone the repo to ~/nix-config, nix-on-droid switch --flake ~/nix-config#$name, then 'reb'." ;;
           esac
         '';
       };

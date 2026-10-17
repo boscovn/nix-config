@@ -17,8 +17,8 @@ Never switch (`nh os switch`, `nh home switch`, `nixos-rebuild switch`): that is
    For hosts other than thinkpad, list them with `nix eval .#nixosConfigurations --apply builtins.attrNames` and `nix eval .#homeConfigurations --apply builtins.attrNames`.
 4. **Build and diff** when the change affects packages or generated files:
    ```bash
-   nh os build ~/.dotfiles     # system + embedded home-manager, prints the package diff
-   nh home build ~/.dotfiles   # standalone home-manager
+   nh os build ~/nix-config     # system + embedded home-manager, prints the package diff
+   nh home build ~/nix-config   # standalone home-manager
    ```
    Inspect generated files in the result (e.g. `nix build --no-link --print-out-paths '.#homeConfigurations."bosco@thinkpad".activationPackage'`, then `home-files/...`) when the change is about their content.
 5. **Portability**, when `homeManager.base` changed: the throwaway aarch64-darwin host from CLAUDE.md ("Checking portability"), then delete it.

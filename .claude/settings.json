@@ -81,7 +81,7 @@
     "dotfiles": {
       "source": {
         "source": "directory",
-        "path": "/home/bosco/.dotfiles/claude-plugins"
+        "path": "/home/bosco/nix-config/claude-plugins"
       }
     }
   }
