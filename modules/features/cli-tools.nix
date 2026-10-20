@@ -69,6 +69,11 @@
         # then `direnv allow`. nix-direnv caches them in .direnv/ (globally
         # git-ignored, git.nix) as GC roots, re-evaluating only when the
         # flake/devenv files change.
+        devenv = {
+          enable = true;
+          enableZshIntegration = true;
+          enableBashIntegration = true;
+        };
         direnv = {
           enable = true;
           nix-direnv.enable = true;
@@ -80,7 +85,6 @@
         with pkgs;
         [
           claude-code
-          devenv
           gopass
           inputs.home-manager.packages.${pkgs.stdenv.hostPlatform.system}.default
           jq
