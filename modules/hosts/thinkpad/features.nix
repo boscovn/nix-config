@@ -10,6 +10,7 @@
     intel-graphics
     laptop
     bluetooth
+    ddc
     docker
     gaming
     kdeconnect
@@ -24,6 +25,7 @@
     base
     gui
     email
+    ddc
     kdeconnect
     laptop
     tailscale
