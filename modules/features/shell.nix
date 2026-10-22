@@ -68,6 +68,13 @@
         enable = true;
         enableZshIntegration = true;
         enableBashIntegration = true;
+        settings = {
+          enter_accept = true;
+          sync.records = true;
+        };
+        # atuin writes a default config.toml whenever it's missing (any shell
+        # prompt), which would block home-manager's from being linked.
+        forceOverwriteSettings = true;
       };
     };
 }

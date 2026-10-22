@@ -87,6 +87,7 @@ Conventions:
 - **Dev tooling** (`cli-tools.nix`): direnv with nix-direnv (`use flake` in `.envrc`), devenv; Claude Code is wrapped with nodejs, uv and python3 appended to its PATH (for plugins). Global git ignores (`git.nix`): `.direnv/`, `**/.claude/settings.local.json`.
 - **nixbuild** (`services/nixbuild.nix`): eu.nixbuild.net as remote builder for x86_64-linux and aarch64-linux, with a dedicated ssh key from the host's sops secrets (`nixbuild-ssh-key`; creating one for a new host: see the file).
 - **Secrets** (`secrets.nix`): sops-nix. Recipients in `.sops.yaml` (bosco's GPG key + each host's age key from its ssh host key, `ssh-to-age`); a host's secrets in `modules/hosts/<name>/secrets.yaml` (its `sops.defaultSopsFile`), edited with `sops <file>`, `sops updatekeys <file>` after changing recipients. A feature needing a secret imports `nixos.secrets` itself and declares `sops.secrets.<name>` (nixbuild's ssh key → `/run/secrets/nixbuild-ssh-key`). home-manager decrypts with `~/.config/sops/age/keys.txt` (placed by hand). gopass stays for interactive passwords.
+- **XDG** (`xdg.nix`, base): keeps `~` clean. `home.preferXdgDirectories`, zsh's `ZDOTDIR` (`~/.config/zsh`; on NixOS set in `/etc/zshenv`, so no `~/.zshenv`), Nix's `use-xdg-base-directories`, gnupg in `~/.local/share/gnupg`, and env vars for tools without a module (cargo, rustup, docker, ...). New features should put their files under `xdg.*Home` too.
 - **Theme**: stylix with Catppuccin Mocha (`stylix.nix`), NixOS and home-manager.
 
 ### Hosts (`modules/hosts/<name>/`)
