@@ -41,6 +41,15 @@
         shellAliases = aliases // {
           ls = "${pkgs.eza}/bin/eza";
         };
+        # Ctrl+O edits the command line in $EDITOR. Bound in every keymap:
+        # zsh picks vi mode by itself when $EDITOR contains "vi".
+        initContent = ''
+          autoload -Uz edit-command-line
+          zle -N edit-command-line
+          bindkey -M emacs '^O' edit-command-line
+          bindkey -M viins '^O' edit-command-line
+          bindkey -M vicmd '^O' edit-command-line
+        '';
       };
       programs.bash = {
         enable = true;
