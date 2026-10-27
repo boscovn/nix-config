@@ -86,12 +86,12 @@
           # key) is coalesced into one setvcp, which takes ~0.3s.
           pactl subscribe | while read -r line; do
             case $line in
-              *"'new' on sink"* | *"'remove' on sink"*) forget ;;
+              *"'new' on sink #"* | *"'remove' on sink #"*) forget ;;
               *" on sink #"* | *" on server"*) ;;
               *) continue ;;
             esac
             while read -r -t 0.15 line; do
-              case $line in *"'new' on sink"* | *"'remove' on sink"*) forget ;; esac
+              case $line in *"'new' on sink #"* | *"'remove' on sink #"*) forget ;; esac
             done
             sync
           done
