@@ -88,6 +88,7 @@
           gopass
           inputs.home-manager.packages.${pkgs.stdenv.hostPlatform.system}.default
           jq
+          glab
           just
           nixd
           nixfmt
