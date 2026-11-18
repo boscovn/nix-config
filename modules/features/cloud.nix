@@ -24,5 +24,18 @@
       ];
 
       programs.k9s.enable = true;
+
+      # home.shellAliases reaches every enabled shell (zsh and bash, from
+      # shell.nix) and merges with their own aliases.
+      home.shellAliases.awslogin = "aws sso login --sso-session Anaya";
+
+      # `awsp <profile>` switches AWS_PROFILE in the current shell, completing
+      # the profiles in ~/.aws/config. zsh only; merges with shell.nix's
+      # initContent, after compinit.
+      programs.zsh.initContent = ''
+        awsp() { export AWS_PROFILE="$1"; }
+        _awsp() { compadd $(aws configure list-profiles); }
+        compdef _awsp awsp
+      '';
     };
 }
