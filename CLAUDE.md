@@ -69,7 +69,7 @@ A feature file writes to one or more slots. Small, related pieces merge under a 
 - **`base`** (every host): `nixos.base` (boot, nix settings/caches, locale, user, network, stylix), `nixOnDroid.base` (nix caches, timezone, zsh login shell, stylix for the terminal; stylix's overlays off, Nix-on-Droid refuses `nixpkgs.*` in a flake) and `homeManager.base` (shell, git/gh, gpg, CLI tools, the `nvim` launcher, stylix's terminal targets).
 - **`gui`** (Linux desktop session): `nixos.gui` (greetd autologin, Hyprland, plymouth, keyring PAM, audio, fonts) and `homeManager.gui` (Hyprland lua config, hyprlock, hypridle, ashell, ghostty, apps, browsers, mpv, imv).
 
-Distinct, optional features have their own names: `nixos.{nvidia,nvidia-prime,cuda,intel-graphics,laptop,bluetooth,ddc,docker,gaming,kdeconnect,ssh,nixbuild,tailscale,secrets,howdy}`, `homeManager.{email,kdeconnect,laptop,ddc,tailscale,secrets}`. The thinkpad imports all of them except `howdy` (paused).
+Distinct, optional features have their own names: `nixos.{nvidia,nvidia-prime,cuda,intel-graphics,laptop,bluetooth,ddc,docker,gaming,kdeconnect,ssh,nixbuild,tailscale,secrets,howdy}`, `homeManager.{email,kdeconnect,laptop,ddc,tailscale,secrets,cloud}`. The thinkpad imports all of them except `howdy` (paused) and `cloud` (aws, gcloud, kubectl, k9s; on weasel).
 
 Conventions:
 - **Importing enables.** No `enable` flags: a host that should not have a feature does not import it.
