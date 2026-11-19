@@ -32,6 +32,7 @@
         ])
         pkgs.kubectl
         pkgs.glab
+        pkgs.azure-cli
       ];
 
       programs.k9s.enable = true;
