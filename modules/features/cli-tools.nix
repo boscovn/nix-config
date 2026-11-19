@@ -89,6 +89,7 @@
           inputs.home-manager.packages.${pkgs.stdenv.hostPlatform.system}.default
           jq
           just
+          glow
           nixd
           nixfmt
           opensc
