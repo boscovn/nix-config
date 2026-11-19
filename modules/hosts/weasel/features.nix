@@ -8,10 +8,11 @@ in
   nixos.${name}.imports = with slots.nixos; [
     base
     docker
+    nix-ld
   ];
 
   homeManager.${name}.imports = with slots.homeManager; [
     base
-    cloud
+    werk
   ];
 }
