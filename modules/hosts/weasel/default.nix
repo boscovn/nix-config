@@ -26,5 +26,8 @@ in
       system.stateVersion = "26.11";
     };
 
-  homeManager.${name}.home.stateVersion = "26.11";
+  homeManager.${name} = {
+    home.stateVersion = "26.11";
+    programs.git.settings.user.email = "jbosco@serviciosexternos.anaya.es";
+  };
 }
