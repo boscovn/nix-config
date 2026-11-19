@@ -3,7 +3,12 @@
 # GitLab (glab).
 {
   homeManager.werk =
-    { lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     {
       # glab as credential helper for GitLab (what `glab auth login` would
       # write to the read-only config); gh does the same for GitHub through
@@ -19,7 +24,16 @@
       # `aws configure sso` can edit (declared settings would make it a
       # read-only store symlink). SSO tokens are short-lived and cached by
       # `aws sso login` in ~/.aws/sso/cache; nothing secret is declared here.
-      programs.awscli.enable = true;
+      # The paths are pinned to ~/.aws: home.preferXdgDirectories (xdg.nix)
+      # would move them to ~/.config/aws and export AWS_CONFIG_FILE /
+      # AWS_SHARED_CREDENTIALS_FILE, but the CLI keeps its sso/cli caches in
+      # ~/.aws regardless, so ~/.aws can't go away anyway. At the defaults the
+      # module exports neither variable.
+      programs.awscli = {
+        enable = true;
+        configFile = "${config.home.homeDirectory}/.aws/config";
+        credentialsFile = "${config.home.homeDirectory}/.aws/credentials";
+      };
 
       # No home-manager module; gcloud already uses ~/.config/gcloud. Log in
       # with `gcloud auth login` (and `gcloud auth application-default login`
