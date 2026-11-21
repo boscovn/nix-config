@@ -20,7 +20,12 @@
       ];
       programs.foot.enable = true;
       programs.obsidian.enable = true;
-      programs.zathura.enable = true;
+      programs.zathura = {
+        enable = true;
+        # Selected text goes to the PRIMARY selection by default (middle-click
+        # paste only); send it to the regular clipboard (Ctrl+V) instead.
+        options.selection-clipboard = "clipboard";
+      };
       xdg.mimeApps = {
         enable = true;
         defaultApplications."application/pdf" = [ "org.pwmt.zathura.desktop" ];
